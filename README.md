@@ -49,7 +49,3 @@ Variáveis opcionais:
 | `PORT` | `3001` | Porta do servidor |
 | `CLIENT_ORIGIN` | `http://localhost:5173` | CORS do Socket.IO em desenvolvimento |
 | `VITE_SOCKET_URL` | (mesmo origin) | URL do socket se o front e o server estiverem separados |
-
-## Licença
-
-MIT
