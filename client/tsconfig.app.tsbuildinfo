@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/socket.ts","./src/types.ts","./src/vite-env.d.ts","./src/components/board.tsx","./src/components/joingate.tsx","./src/components/presencebar.tsx"],"version":"5.9.3"}
