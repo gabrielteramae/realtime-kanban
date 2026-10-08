@@ -1,100 +1,54 @@
-# 🟢 Realtime Kanban — React + Socket.IO + Express
+# Realtime Kanban — quadro ao vivo com Socket.IO
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat&logo=typescript&logoColor=white)
-![Socket.IO](https://img.shields.io/badge/Socket.IO-4-010101?style=flat&logo=socketdotio&logoColor=white)
-![Status](https://img.shields.io/badge/status-testado%20no%20browser-brightgreen?style=flat)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=flat&logo=socketdotio&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?style=flat&logo=express&logoColor=white)
 
-Quadro Kanban colaborativo em tempo real: vários usuários no mesmo board, atualizando cartões **ao vivo** com WebSocket. Feito para portfólio — tempo real assusta iniciante, e é justamente por isso que impressiona.
+Quadro com as colunas A fazer, Em andamento e Concluído. Quem entra manda um nome; criar, editar, mover e apagar cartão replica para os outros sockets. Presença entra e sai com a conexão.
 
-## 🧠 Por que este exemplo
+| Escolha | Motivo |
+| --- | --- |
+| `BoardStore` em memória | Sobe com um processo só. Reiniciar o servidor zera os cartões |
 
-Kanban ao vivo é o "hello world" clássico de colaboração em tempo real porque, em pouco código, cobre os três padrões mais comuns do modelo:
-- **Estado compartilhado** (todo mundo vê o mesmo quadro) → evento `board:sync`
-- **Mutação com broadcast** (criar, editar, mover, apagar) → `card:*` + `activity`
-- **Presença** (quem está online agora) → `join` / `presence:join` / `presence:leave`
+## Stack
 
-## 🏗️ Arquitetura
+- React 19, TypeScript, Vite 6, Tailwind CSS 4 e `@dnd-kit` no `client`
+- Express 4 e Socket.IO 4 no `server`
+- Workspaces npm (`client` e `server`) e `concurrently` na raiz
+- Node.js 20 ou mais novo (`engines` do `package.json`)
 
-```mermaid
-graph LR
-    BrowserA[Cliente A] -->|WebSocket| SocketIO[Socket.IO]
-    BrowserB[Cliente B] -->|WebSocket| SocketIO
+Eventos em `server/src/index.ts`: `join`, `board:sync`, `card:create`, `card:update`, `card:move`, `card:delete`, `presence:join`, `presence:leave`. `GET /health` responde `{ ok: true }`.
 
-    SocketIO --> Express[Express HTTP]
-    SocketIO --> Board[BoardStore em memória]
+## Estrutura
 
-    Express -->|GET /health| Health[Health check]
-    Express -->|produção| Static[client/dist]
+```
+package.json
+client/index.html
+client/vite.config.ts
+client/src/main.tsx
+client/src/App.tsx
+client/src/socket.ts
+client/src/components/Board.tsx
+client/src/components/JoinGate.tsx
+client/src/components/PresenceBar.tsx
+server/src/index.ts
+server/src/board.ts
+server/src/types.ts
 ```
 
-O front (Vite + React) conecta no servidor (`localhost:3001` em dev). O `BoardStore` guarda colunas e cartões em memória — reiniciar o processo zera o quadro, de propósito, para o demo subir com um comando só.
-
-## 📡 Eventos
-
-| Direção | Evento | O que faz |
-|---|---|---|
-| Cliente → servidor | `join` | Entra no quadro com um nome e recebe o snapshot |
-| Servidor → cliente | `board:sync` | Envia `cards` + `users` (estado completo) |
-| Cliente → servidor | `card:create` / `card:update` / `card:move` / `card:delete` | Mutação no board |
-| Servidor → todos | `card:created` / `card:updated` / `card:deleted` / `activity` | Replica a mudança na hora |
-| Servidor → outros | `presence:join` / `presence:leave` | Atualiza quem está online |
-
-## ✅ Testado no browser
-
-Fluxo conferido localmente com o app rodando (`npm run dev`):
-- Entrada com nome e presença (`1 online agora` + chip do usuário)
-- Seed das três colunas (*A fazer / Em andamento / Concluído*)
-- Criação de cartão na UI (`Publicar no GitHub`)
-- Broadcast de outro cliente via Socket.IO (`Tarefa via socket` apareceu no quadro aberto)
-
-## 🚀 Como rodar
-
-### Pré-requisitos
-- Node.js 20+
-- npm
-
-### 1. Instalar
+## Como rodar
 
 ```bash
+git clone https://github.com/gabrielteramae/realtime-kanban.git
+cd realtime-kanban
 npm install
-```
-
-### 2. Subir front + servidor juntos
-
-```bash
 npm run dev
 ```
 
-- Front: [http://localhost:5173](http://localhost:5173)
-- API / Socket.IO: [http://localhost:3001](http://localhost:3001)
+Front em http://localhost:5173. Socket e `GET /health` em http://localhost:3001.
 
-Abra **duas abas**, entre com nomes diferentes e arraste um cartão. A outra aba atualiza na hora.
-
-### 3. Build + servir o front pelo Express
-
-```bash
-npm run build
-npm start
-```
-
-O servidor entrega o `client/dist` na porta `3001`. Variáveis opcionais:
-
-| Variável | Padrão | Uso |
-|---|---|---|
-| `PORT` | `3001` | Porta do servidor |
-| `CLIENT_ORIGIN` | `http://localhost:5173` | CORS do Socket.IO em desenvolvimento |
-| `VITE_SOCKET_URL` | `http://localhost:3001` (dev) | URL do socket se front e server estiverem separados |
-
-## 📦 Stack
-
-- **React 19 + Vite + TypeScript + Tailwind CSS 4** — interface do quadro
-- **Express + Socket.IO** — HTTP e canal em tempo real
-- **@dnd-kit** — arrastar e soltar entre colunas
-
-## 🗺️ Relação com o desafio
-
-Este projeto aplica o item de **gestor de tarefas colaborativo em tempo real**: vários usuários no mesmo quadro, atualizando ao vivo com WebSocket. Não há cadastro — o nome na entrada já basta para demonstrar presença e sincronização.
+`npm run build` e depois `npm start` fazem o Express servir `client/dist` na porta `PORT` (padrão 3001). `CLIENT_ORIGIN` ajusta o CORS (padrão `http://localhost:5173`). No client, `VITE_SOCKET_URL` aponta o socket quando front e servidor não estão juntos; em dev o fallback é `http://localhost:3001`.
 
 ---
 
