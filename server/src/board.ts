@@ -61,7 +61,7 @@ export class BoardStore {
     const order = this.cards.filter((card) => card.columnId === columnId).length;
     const card: Card = {
       id: randomUUID(),
-      title: payload.title.trim() || "Nova tarefa",
+      title: payload.title?.trim() || "Nova tarefa",
       description: payload.description?.trim() ?? "",
       columnId,
       order,
