@@ -5,7 +5,7 @@ export function JoinGate({ onJoin }: { onJoin: (name: string) => void }) {
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    onJoin(name.trim() || "Visitante");
+    onJoin(name.trim().slice(0, 40) || "Visitante");
   };
 
   return (
